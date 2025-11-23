@@ -126,4 +126,13 @@
   .border-neon-pink {
     border-color: hsl(var(--neon-pink));
   }
+
+  @keyframes roulette-spin {
+    0% {
+      transform: translateX(-50%);
+    }
+    100% {
+      transform: translateX(calc(-50% - 6800px));
+    }
+  }
 }

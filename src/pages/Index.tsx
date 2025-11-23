@@ -105,6 +105,7 @@ export default function Index() {
   const [balance, setBalance] = useState(5000);
   const [inventory, setInventory] = useState<Weapon[]>([]);
   const [showInventory, setShowInventory] = useState(false);
+  const [rouletteItems, setRouletteItems] = useState<Weapon[]>([]);
 
   const playSound = (type: 'open' | 'win' | 'rare' | 'sell') => {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -154,18 +155,27 @@ export default function Index() {
     setIsOpening(true);
     setWonItem(null);
 
-    setTimeout(() => {
+    const rouletteList: Weapon[] = [];
+    for (let i = 0; i < 50; i++) {
       const randomWeapon = weapons[Math.floor(Math.random() * weapons.length)];
-      const newItem = { ...randomWeapon, id: `${randomWeapon.id}-${Date.now()}`, price: randomWeapon.price };
-      
-      if (newItem.rarity === 'arcana' || newItem.rarity === 'legendary') {
+      rouletteList.push({ ...randomWeapon, id: `roulette-${i}` });
+    }
+    
+    const finalWeapon = weapons[Math.floor(Math.random() * weapons.length)];
+    const finalItem = { ...finalWeapon, id: `${finalWeapon.id}-${Date.now()}`, price: finalWeapon.price };
+    rouletteList[45] = finalItem;
+    
+    setRouletteItems(rouletteList);
+
+    setTimeout(() => {
+      if (finalItem.rarity === 'arcana' || finalItem.rarity === 'legendary') {
         playSound('rare');
       } else {
         playSound('win');
       }
       
-      setWonItem(newItem);
-      setInventory(prev => [...prev, newItem]);
+      setWonItem(finalItem);
+      setInventory(prev => [...prev, finalItem]);
       setIsOpening(false);
     }, 3000);
   };
@@ -382,16 +392,32 @@ export default function Index() {
             </div>
 
             {isOpening && (
-              <div className="text-center space-y-4">
-                <div className="text-6xl animate-spin-slow">⚡</div>
-                <p className="text-xl text-neon-cyan animate-pulse font-bold">
+              <div className="space-y-4">
+                <div className="relative overflow-hidden h-48 bg-card/50 rounded-lg border-2 border-primary/30">
+                  <div className="absolute top-1/2 left-1/2 w-1 h-full bg-neon-cyan z-10 -translate-x-1/2 shadow-[0_0_20px_rgba(0,240,255,0.8)]" />
+                  
+                  <div 
+                    className="flex gap-4 absolute top-1/2 -translate-y-1/2 px-4"
+                    style={{
+                      animation: 'roulette-spin 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
+                      left: '50%'
+                    }}
+                  >
+                    {rouletteItems.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex-shrink-0 w-32 h-32 border-2 ${rarityColors[item.rarity]} ${rarityGlow[item.rarity]} 
+                          bg-card/80 rounded-lg flex flex-col items-center justify-center p-2`}
+                      >
+                        <div className="text-4xl mb-1">{item.image}</div>
+                        <p className="text-xs font-semibold text-foreground text-center">{item.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xl text-neon-cyan animate-pulse font-bold text-center">
                   Открываем кейс...
                 </p>
-                <div className="flex gap-2 justify-center">
-                  <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-                  <div className="w-3 h-3 bg-secondary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  <div className="w-3 h-3 bg-accent rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
-                </div>
               </div>
             )}
 
