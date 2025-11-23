@@ -292,7 +292,7 @@ export default function Index() {
                     p-4 text-center bg-card/30 backdrop-blur hover:scale-105 transition-all`}
                 >
                   <div className="text-5xl mb-2">{weapon.image}</div>
-                  <p className="font-semibold text-foreground">{weapon.name}</p>
+                  <p className="text-red-600 font-semibold">{weapon.name}</p>
                   <p className="text-sm text-muted-foreground">{weapon.skin}</p>
                   <Badge className={`mt-2 ${rarityColors[weapon.rarity]} border`}>
                     {weapon.rarity}
