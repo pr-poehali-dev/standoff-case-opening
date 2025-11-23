@@ -106,9 +106,50 @@ export default function Index() {
   const [inventory, setInventory] = useState<Weapon[]>([]);
   const [showInventory, setShowInventory] = useState(false);
 
+  const playSound = (type: 'open' | 'win' | 'rare' | 'sell') => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    if (type === 'open') {
+      oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } else if (type === 'win') {
+      oscillator.frequency.setValueAtTime(523, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } else if (type === 'rare') {
+      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.4);
+    } else if (type === 'sell') {
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(700, audioContext.currentTime + 0.05);
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.15);
+    }
+  };
+
   const openCase = () => {
     if (!selectedCase || balance < selectedCase.price) return;
     
+    playSound('open');
     setBalance(prev => prev - selectedCase.price);
     setIsOpening(true);
     setWonItem(null);
@@ -116,6 +157,13 @@ export default function Index() {
     setTimeout(() => {
       const randomWeapon = weapons[Math.floor(Math.random() * weapons.length)];
       const newItem = { ...randomWeapon, id: `${randomWeapon.id}-${Date.now()}`, price: randomWeapon.price };
+      
+      if (newItem.rarity === 'arcana' || newItem.rarity === 'legendary') {
+        playSound('rare');
+      } else {
+        playSound('win');
+      }
+      
       setWonItem(newItem);
       setInventory(prev => [...prev, newItem]);
       setIsOpening(false);
@@ -129,6 +177,7 @@ export default function Index() {
   };
 
   const sellItem = (itemId: string, price: number) => {
+    playSound('sell');
     setInventory(prev => prev.filter(item => item.id !== itemId));
     setBalance(prev => prev + price);
   };
