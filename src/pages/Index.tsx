@@ -24,6 +24,7 @@ interface Weapon {
   skin: string;
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   image: string;
+  price?: number;
 }
 
 const cases: CaseItem[] = [
@@ -72,12 +73,12 @@ const cases: CaseItem[] = [
 ];
 
 const weapons: Weapon[] = [
-  { id: '1', name: 'AK-47', skin: 'Cyber Dragon', rarity: 'legendary', image: '🔫' },
-  { id: '2', name: 'M4A1', skin: 'Neon Strike', rarity: 'epic', image: '🔫' },
-  { id: '3', name: 'AWP', skin: 'Digital Wave', rarity: 'epic', image: '🎯' },
-  { id: '4', name: 'Desert Eagle', skin: 'Plasma', rarity: 'rare', image: '🔫' },
-  { id: '5', name: 'Knife', skin: 'Chrome Edge', rarity: 'legendary', image: '🔪' },
-  { id: '6', name: 'Glock-18', skin: 'Circuit', rarity: 'common', image: '🔫' },
+  { id: '1', name: 'AK-47', skin: 'Cyber Dragon', rarity: 'legendary', image: '🔫', price: 800 },
+  { id: '2', name: 'M4A1', skin: 'Neon Strike', rarity: 'epic', image: '🔫', price: 400 },
+  { id: '3', name: 'AWP', skin: 'Digital Wave', rarity: 'epic', image: '🎯', price: 450 },
+  { id: '4', name: 'Desert Eagle', skin: 'Plasma', rarity: 'rare', image: '🔫', price: 200 },
+  { id: '5', name: 'Knife', skin: 'Chrome Edge', rarity: 'legendary', image: '🔪', price: 1000 },
+  { id: '6', name: 'Glock-18', skin: 'Circuit', rarity: 'common', image: '🔫', price: 80 },
 ];
 
 const rarityColors = {
@@ -111,7 +112,7 @@ export default function Index() {
 
     setTimeout(() => {
       const randomWeapon = weapons[Math.floor(Math.random() * weapons.length)];
-      const newItem = { ...randomWeapon, id: `${randomWeapon.id}-${Date.now()}` };
+      const newItem = { ...randomWeapon, id: `${randomWeapon.id}-${Date.now()}`, price: randomWeapon.price };
       setWonItem(newItem);
       setInventory(prev => [...prev, newItem]);
       setIsOpening(false);
@@ -122,6 +123,11 @@ export default function Index() {
     setSelectedCase(null);
     setWonItem(null);
     setIsOpening(false);
+  };
+
+  const sellItem = (itemId: string, price: number) => {
+    setInventory(prev => prev.filter(item => item.id !== itemId));
+    setBalance(prev => prev + price);
   };
 
   return (
@@ -275,14 +281,27 @@ export default function Index() {
                     <Card
                       key={idx}
                       className={`border-2 ${rarityColors[item.rarity]} ${rarityGlow[item.rarity]} 
-                        p-4 text-center bg-card/30 backdrop-blur hover:scale-105 transition-all`}
+                        p-4 text-center bg-card/30 backdrop-blur transition-all group relative overflow-hidden`}
                     >
                       <div className="text-5xl mb-2">{item.image}</div>
                       <p className="font-semibold text-foreground text-sm">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">{item.skin}</p>
-                      <Badge className={`mt-2 ${rarityColors[item.rarity]} border text-xs`}>
+                      <p className="text-xs text-muted-foreground mb-1">{item.skin}</p>
+                      <Badge className={`mt-2 mb-2 ${rarityColors[item.rarity]} border text-xs`}>
                         {item.rarity}
                       </Badge>
+                      <div className="flex items-center justify-center gap-1 text-neon-cyan font-bold text-sm mb-2">
+                        <Icon name="Coins" size={14} />
+                        {item.price} ₽
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => sellItem(item.id, item.price || 0)}
+                        className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 
+                          text-white font-semibold text-xs py-2 shadow-[0_0_10px_rgba(34,197,94,0.3)] hover:shadow-[0_0_15px_rgba(34,197,94,0.5)]"
+                      >
+                        <Icon name="DollarSign" size={14} className="mr-1" />
+                        ПРОДАТЬ
+                      </Button>
                     </Card>
                   ))}
                 </div>
