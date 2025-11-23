@@ -15,14 +15,14 @@ interface CaseItem {
   name: string;
   image: string;
   price: number;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'arcana';
 }
 
 interface Weapon {
   id: string;
   name: string;
   skin: string;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'arcana';
   image: string;
   price?: number;
 }
@@ -79,6 +79,7 @@ const weapons: Weapon[] = [
   { id: '4', name: 'Desert Eagle', skin: 'Plasma', rarity: 'rare', image: '🔫', price: 200 },
   { id: '5', name: 'Knife', skin: 'Chrome Edge', rarity: 'legendary', image: '🔪', price: 1000 },
   { id: '6', name: 'Glock-18', skin: 'Circuit', rarity: 'common', image: '🔫', price: 80 },
+  { id: '7', name: 'Golden AK-47', skin: 'Arcana Divine', rarity: 'arcana', image: '⚡', price: 5000 },
 ];
 
 const rarityColors = {
@@ -86,6 +87,7 @@ const rarityColors = {
   rare: 'border-blue-500 bg-blue-500/10',
   epic: 'border-neon-purple bg-neon-purple/10',
   legendary: 'border-neon-pink bg-neon-pink/10',
+  arcana: 'border-yellow-400 bg-gradient-to-br from-yellow-400/20 via-orange-500/20 to-red-500/20',
 };
 
 const rarityGlow = {
@@ -93,6 +95,7 @@ const rarityGlow = {
   rare: 'shadow-[0_0_10px_rgba(59,130,246,0.5)]',
   epic: 'neon-glow-purple',
   legendary: 'neon-glow-pink',
+  arcana: 'shadow-[0_0_20px_rgba(250,204,21,0.8),0_0_40px_rgba(251,146,60,0.6),0_0_60px_rgba(239,68,68,0.4)] animate-glow-pulse',
 };
 
 export default function Index() {
@@ -264,8 +267,8 @@ export default function Index() {
                   <p className="text-lg text-muted-foreground">
                     Предметов: <span className="text-neon-cyan font-bold">{inventory.length}</span>
                   </p>
-                  <div className="flex gap-2">
-                    {['legendary', 'epic', 'rare', 'common'].map(rarity => {
+                  <div className="flex gap-2 flex-wrap">
+                    {['arcana', 'legendary', 'epic', 'rare', 'common'].map(rarity => {
                       const count = inventory.filter(item => item.rarity === rarity).length;
                       if (count === 0) return null;
                       return (
