@@ -19,6 +19,7 @@ interface CaseItem {
 }
 
 interface Weapon {
+  id: string;
   name: string;
   skin: string;
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
@@ -71,12 +72,12 @@ const cases: CaseItem[] = [
 ];
 
 const weapons: Weapon[] = [
-  { name: 'AK-47', skin: 'Cyber Dragon', rarity: 'legendary', image: '🔫' },
-  { name: 'M4A1', skin: 'Neon Strike', rarity: 'epic', image: '🔫' },
-  { name: 'AWP', skin: 'Digital Wave', rarity: 'epic', image: '🎯' },
-  { name: 'Desert Eagle', skin: 'Plasma', rarity: 'rare', image: '🔫' },
-  { name: 'Knife', skin: 'Chrome Edge', rarity: 'legendary', image: '🔪' },
-  { name: 'Glock-18', skin: 'Circuit', rarity: 'common', image: '🔫' },
+  { id: '1', name: 'AK-47', skin: 'Cyber Dragon', rarity: 'legendary', image: '🔫' },
+  { id: '2', name: 'M4A1', skin: 'Neon Strike', rarity: 'epic', image: '🔫' },
+  { id: '3', name: 'AWP', skin: 'Digital Wave', rarity: 'epic', image: '🎯' },
+  { id: '4', name: 'Desert Eagle', skin: 'Plasma', rarity: 'rare', image: '🔫' },
+  { id: '5', name: 'Knife', skin: 'Chrome Edge', rarity: 'legendary', image: '🔪' },
+  { id: '6', name: 'Glock-18', skin: 'Circuit', rarity: 'common', image: '🔫' },
 ];
 
 const rarityColors = {
@@ -97,17 +98,22 @@ export default function Index() {
   const [selectedCase, setSelectedCase] = useState<CaseItem | null>(null);
   const [isOpening, setIsOpening] = useState(false);
   const [wonItem, setWonItem] = useState<Weapon | null>(null);
-  const [balance] = useState(5000);
+  const [balance, setBalance] = useState(5000);
+  const [inventory, setInventory] = useState<Weapon[]>([]);
+  const [showInventory, setShowInventory] = useState(false);
 
   const openCase = () => {
-    if (!selectedCase) return;
+    if (!selectedCase || balance < selectedCase.price) return;
     
+    setBalance(prev => prev - selectedCase.price);
     setIsOpening(true);
     setWonItem(null);
 
     setTimeout(() => {
       const randomWeapon = weapons[Math.floor(Math.random() * weapons.length)];
-      setWonItem(randomWeapon);
+      const newItem = { ...randomWeapon, id: `${randomWeapon.id}-${Date.now()}` };
+      setWonItem(newItem);
+      setInventory(prev => [...prev, newItem]);
       setIsOpening(false);
     }, 3000);
   };
@@ -136,8 +142,17 @@ export default function Index() {
                 <Icon name="Coins" size={20} className="mr-2" />
                 {balance} ₽
               </Badge>
-              <Button variant="outline" className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-background neon-glow">
-                <Icon name="User" size={20} />
+              <Button 
+                variant="outline" 
+                className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-background neon-glow relative"
+                onClick={() => setShowInventory(true)}
+              >
+                <Icon name="Package" size={20} />
+                {inventory.length > 0 && (
+                  <Badge className="absolute -top-2 -right-2 bg-neon-pink text-white border-0 h-6 w-6 flex items-center justify-center p-0 text-xs">
+                    {inventory.length}
+                  </Badge>
+                )}
               </Button>
             </div>
           </div>
@@ -220,6 +235,62 @@ export default function Index() {
           </div>
         </section>
       </div>
+
+      <Dialog open={showInventory} onOpenChange={setShowInventory}>
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-2 border-primary max-w-4xl neon-glow max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-bold text-center text-neon-cyan flex items-center justify-center gap-2">
+              <Icon name="Package" size={32} />
+              МОЙ ИНВЕНТАРЬ
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-6">
+            {inventory.length === 0 ? (
+              <div className="text-center py-12 space-y-4">
+                <div className="text-6xl opacity-50">📦</div>
+                <p className="text-xl text-muted-foreground">Ваш инвентарь пуст</p>
+                <p className="text-sm text-muted-foreground">Открывайте кейсы, чтобы получить предметы</p>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-lg text-muted-foreground">
+                    Предметов: <span className="text-neon-cyan font-bold">{inventory.length}</span>
+                  </p>
+                  <div className="flex gap-2">
+                    {['legendary', 'epic', 'rare', 'common'].map(rarity => {
+                      const count = inventory.filter(item => item.rarity === rarity).length;
+                      if (count === 0) return null;
+                      return (
+                        <Badge key={rarity} className={`${rarityColors[rarity as keyof typeof rarityColors]} border`}>
+                          {rarity}: {count}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {inventory.map((item, idx) => (
+                    <Card
+                      key={idx}
+                      className={`border-2 ${rarityColors[item.rarity]} ${rarityGlow[item.rarity]} 
+                        p-4 text-center bg-card/30 backdrop-blur hover:scale-105 transition-all`}
+                    >
+                      <div className="text-5xl mb-2">{item.image}</div>
+                      <p className="font-semibold text-foreground text-sm">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">{item.skin}</p>
+                      <Badge className={`mt-2 ${rarityColors[item.rarity]} border text-xs`}>
+                        {item.rarity}
+                      </Badge>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={selectedCase !== null} onOpenChange={closeDialog}>
         <DialogContent className="bg-card/95 backdrop-blur-xl border-2 border-primary max-w-2xl neon-glow">
